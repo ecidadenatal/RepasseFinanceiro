@@ -1,0 +1,78 @@
+<?xml version="1.0" standalone="yes" ?>
+<table name="plugins.autorizacaorepasse" description="Autorizações Solicitações de Repasse Financeiro." prefix="" label="Autorizações de Repasse Financeiro." type="0">
+  <fields>
+    <field name="sequencial"
+           conteudo="int4"
+           description="Sequencial"
+           inivalue="0"
+           label="Sequencial"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="1"
+           tipoobj="text"
+           labelrel="Sequencial"
+           reference=""
+           ispk="t"
+           hassequence="t">
+      <sequence name="plugins.autorizacaorepasse_sequencial_seq" />
+    </field>
+    <field name="slip"
+           conteudo="int4"
+           description="Slip"
+           inivalue="0"
+           label="Slip"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="1"
+           tipoobj="text"
+           labelrel="Slip"
+           reference=""
+           ispk="f"
+           hassequence="f">
+    </field>
+    <field name="solicitacaorepasse"
+           conteudo="int4"
+           description="Solicitação de Repasse"
+           inivalue="0"
+           label="Solicitação de Repasse"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="1"
+           tipoobj="text"
+           labelrel="Solicitação de Repasse"
+           reference=""
+           ispk="f"
+           hassequence="f">
+    </field>
+    <field name="data"
+           conteudo="date"
+           description="Data"
+           inivalue="null"
+           label="Data"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="0"
+           tipoobj="text"
+           labelrel="Data"
+           reference=""
+           ispk="f"
+           hassequence="f">
+    </field>
+  </fields>
+  <primarykey>
+    <fieldpk name="sequencial" />
+  </primarykey>
+  <foreignkeys>
+    <foreignkey reference="plugins.solicitacaorepasse" inner='true'>
+      <fieldfk name="solicitacaorepasse" reference="sequencial" />
+    </foreignkey>
+  </foreignkeys>
+</table>

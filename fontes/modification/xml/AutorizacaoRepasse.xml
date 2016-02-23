@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<modification>
+  <id>AutorizacaoRepasse</id>
+  <name>Autorização de Repasse</name>
+  <ecidade-version>2.3.39</ecidade-version>
+  <file path='emp4_gerarslipRPC.php'>
+    <operation>
+      <search><![CDATA[/** [AutorizacaoRepasse] - Inicio */]]></search>
+      <add position="after">
+        <![CDATA[
+  case 'autorizarRepasseFinanceiro':
+
+    try {
+      db_inicio_transacao();
+
+      $aAutorizacoes = array();
+      foreach ($oParam->solicitacoes as $iSolicitacao) {
+
+        $oData = new DBDate(date('Y-m-d', db_getsession('DB_datausu')));
+        $oSolicitacao = new SolicitacaoRepasseFinanceiro($iSolicitacao);
+        $oInstituicao = InstituicaoRepository::getInstituicaoByCodigo(db_getsession('DB_instit'));
+        $oAutorizacao = new AutorizacaoSolicitacaoRepasse();
+        $oAutorizacao->setSolicitacao($oSolicitacao);
+        $oAutorizacao->setInstituicao($oInstituicao);
+        $oAutorizacao->setData($oData);
+
+        if ($oSolicitacao->getTipo() == SolicitacaoRepasseFinanceiro::TIPO_REPASSE) {
+          $oAutorizacao->setContaPagadora(new contaTesouraria($oParam->conta_pagadora));
+        }
+
+        $oAutorizacao->autorizar();
+        $aAutorizacoes[] = $oAutorizacao->getCodigo();
+      }
+
+      $oRetorno->erro  = false;
+      $oRetorno->autorizacoes = implode(',', $aAutorizacoes);
+      db_fim_transacao(false);
+
+    } catch (Exception $eErro) {
+
+      db_fim_transacao(true);
+      $oRetorno->erro = true;
+      $oRetorno->mensagem = urlencode($eErro->getMessage());
+    }
+    echo json_encode($oRetorno);
+    break;
+          ]]>
+      </add>
+    </operation>
+    <operation>
+      <search><![CDATA[/** [CancelamentoRepasse] - Inicio */]]></search>
+      <add position="after">
+        <![CDATA[
+  case 'cancelarAutorizacaoRepasseFinanceiro':
+
+    try {
+
+      db_inicio_transacao();
+
+      $oSolicitacaoRepasse = new SolicitacaoRepasseFinanceiro();
+      $oSolicitacaoRepasse->setCodigo($oParam->iSolicitacao);
+      $oAutorizacaoSolicitacaoRepasse = $oSolicitacaoRepasse->buscarAutorizacao();
+      $oAutorizacaoSolicitacaoRepasse->cancelar();
+
+      $oRetorno->erro = false;
+      db_fim_transacao(false);
+
+    } catch (Exception $eErro) {
+
+      db_fim_transacao(true);
+      $oRetorno->erro     = true;
+      $oRetorno->mensagem = urlencode($eErro->getMessage());
+    }
+    echo json_encode($oRetorno);
+    break;
+          ]]>
+      </add>
+    </operation>
+    <operation>
+      <search><![CDATA[/** [DevolucaoRepasse] - Inicio */]]></search>
+      <add position="after">
+        <![CDATA[
+  case 'salvarDevolucaoRepasse':
+
+    try {
+
+      db_inicio_transacao();
+
+      if (empty($oParam->iSolicitacao)) {
+        throw new Exception("A Solicitação de Repasse não foi informada.");
+      }
+
+      $oSolicitacao = new SolicitacaoRepasseFinanceiro($oParam->iSolicitacao);
+      $oDevolucao   = new DevolucaoRepasseFinanceiro($oSolicitacao, $oParam->nValor);
+      if (!empty($oParam->aLiquidacoes)) {
+        $oDevolucao->setNotasLiquidacao($oParam->aLiquidacoes);
+      }
+      $oRetorno->slip = $oDevolucao->devolver();
+      $oRetorno->erro = false;
+
+      db_fim_transacao(false);
+
+    } catch (Exception $eErro) {
+
+      db_fim_transacao(true);
+      $oRetorno->erro     = true;
+      $oRetorno->mensagem = urlencode($eErro->getMessage());
+    }
+    echo json_encode($oRetorno);
+    break;
+          ]]>
+      </add>
+    </operation>
+  </file>
+
+  <file path='func_sliptipovinculo.php'>
+    <operation>
+      <search><![CDATA["classes/db_slip_classe.php"]]></search>
+      <add position="replace">
+        <![CDATA[Modification::getFile("classes/db_slip_classe.php")]]>
+      </add>
+    </operation>
+    <operation>
+      <search><![CDATA[/** [Extensão] - [AutorizacaoRepasse] - Parte 2 */]]></search>
+      <add position="after">
+        <![CDATA[
+
+  if ($iTipoOperacao == 13) {
+	  $sTipoOperacao .= " and autorizacaorepasse.sequencial is null ";
+	}
+
+  if ($iTipoOperacao == 11) {
+    $sTipoOperacao .= " and not exists(select * from plugins.devolucaosolicitacaorepasse where devolucaosolicitacaorepasse.slip = slip.k17_codigo) ";
+  }
+
+          ]]>
+      </add>
+    </operation>
+  </file>
+
+  <file path='classes/db_slip_classe.php'>
+    <operation>
+      <search><![CDATA[/** [Extensão] - [AutorizacaoRepasse] */]]></search>
+      <add position="after">
+        <![CDATA[
+  $sql .= "  left join plugins.autorizacaorepasse on autorizacaorepasse.slip = slip.k17_codigo ";
+          ]]>
+      </add>
+    </operation>
+  </file>
+
+  <file path='model/agendaPagamento.model.php'>
+    <operation>
+      <search><![CDATA[/* [Extensao] - Solicitacao Repasse */]]></search>
+      <add position="after">
+        <![CDATA[
+    $sRecursos = ConfiguracaoRepasseFinanceiro::getRecursoLiquidacaoObrigatoria();
+    $sAnexos   = ConfiguracaoRepasseFinanceiro::getAnexoLiquidacaoNaoObrigatoria();
+    $aUnidades = ConfiguracaoRepasseFinanceiro::getFiltrosOrgaoUnidade();
+    $aWhereRepasse = array();
+
+    if (!empty($sRecursos)) {
+      $aWhereRepasse[] = " o58_codigo not in ({$sRecursos}) ";
+    }
+
+    if (!empty($sAnexos)) {
+      $aWhereRepasse[] = " o58_localizadorgastos in ({$sAnexos}) ";
+    }
+
+    if (!empty($aUnidades)) {
+
+      $aUnidades = array_map(function($oItem) {
+        return "({$oItem->orgao}, {$oItem->unidade})";
+      }, $aUnidades);
+
+      $aWhereRepasse[] = " (o58_orgao, o58_unidade) in (" . implode(", ", $aUnidades) . ") ";
+    }
+
+    if (!empty($aWhereRepasse)) {
+
+      $oDaoRepasse = new cl_solicitacaorepasseempnota();
+      $sWhereNotaRepasse  = "solicitacaorepasseempnota.empnota = e71_codnota ";
+      $sWhereNotaRepasse .= "and solicitacaorepasseempnota.estornado = false ";
+      $sSqlRepasse = $oDaoRepasse->sql_query_autorizacao("*", $sWhereNotaRepasse);
+      $sWhere .= " and ((" . implode(" or ", $aWhereRepasse) . ") or exists($sSqlRepasse)) ";
+    }
+          ]]>
+      </add>
+    </operation>
+  </file>
+
+  <file path='cai4_solicitacaorepasse001.php'>
+    <operation>
+      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte1] */]]></search>
+      <add position="after">
+        <![CDATA[
+         db_input('liquidacao_mescompetencia', 10, 0, true, 'hidden', 3);]]>
+      </add>
+    </operation>
+    
+    <operation>
+      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte2] */
+    var sQuerySring           = sQuerySringAdicional + '&funcao_js=parent.retornoLiquidacao|0|3|2|6';]]></search>
+      <add position="replace">
+        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte2] */
+    var sQuerySring           = sQuerySringAdicional + '&funcao_js=parent.retornoLiquidacao|0|3|2|6|8';]]>
+      </add>
+    </operation>
+    
+    <operation>
+      <search><![CDATA[  /* [Inicio plugin LiquidacaoCompetencia - parte3] */
+  function retornoLiquidacao(iCodigo, iCodigoEmpenho, sDescricao, nValor, lErro) {]]></search>
+      <add position="replace">
+        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte3] */
+    function retornoLiquidacao(iCodigo, iCodigoEmpenho, sDescricao, nValor, sMesCompetencia, lErro) {]]>
+      </add>
+    </operation>
+    
+    <operation>
+      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte4] */]]></search>
+      <add position="after">
+        <![CDATA[
+	$('liquidacao_mescompetencia').value = sMesCompetencia;]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte5] */
+    oGridLiquidacoes.setCellAlign(['center', 'center', 'left', 'right', 'center']);
+    oGridLiquidacoes.setHeader(["Empenho", "Nota", 'Credor', 'Valor', 'Ações']);]]></search>
+      <add position="replace">
+        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte5] */
+    oGridLiquidacoes.setCellAlign(['center', 'center', 'left', 'right', 'center', 'center']);
+    oGridLiquidacoes.setHeader(["Empenho", "Nota", 'Credor', 'Valor', 'Competência', 'Ações']);]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte6] */]]></search>
+      <add position="after">
+        <![CDATA[
+	var sMesCompetencia = $F('liquidacao_mescompetencia');]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte7] */
+    var aLinha                        = [iCodigoEmpenho,
+      iCodigoNota,
+      sNomeCredor,
+      js_formatar(nValor, 'f'),
+      montaBotaoRemover(aLiquidacoes.length)];]]></search>
+      <add position="replace">
+        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte7] */
+    var aLinha                        = [iCodigoEmpenho,
+      iCodigoNota,
+      sNomeCredor,
+      js_formatar(nValor, 'f'),
+      sMesCompetencia,
+      montaBotaoRemover(aLiquidacoes.length)];]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte8] */]]></search>
+      <add position="after">
+        <![CDATA[
+	$('liquidacao_mescompetencia').value = '';]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search><![CDATA[var aLinha = [
+          aDadosLiquidacoes[iLiquidacoes].iEmpenho,
+          aDadosLiquidacoes[iLiquidacoes].iNota,
+          aDadosLiquidacoes[iLiquidacoes].sCredor.urlDecode(),
+          js_formatar(aDadosLiquidacoes[iLiquidacoes].nValor, 'f'),
+          montaBotaoRemover(iLiquidacoes)
+        ];]]></search>
+      <add position="replace">
+        <![CDATA[
+        var aLinha = [
+          aDadosLiquidacoes[iLiquidacoes].iEmpenho,
+          aDadosLiquidacoes[iLiquidacoes].iNota,
+          aDadosLiquidacoes[iLiquidacoes].sCredor.urlDecode(),
+          js_formatar(aDadosLiquidacoes[iLiquidacoes].nValor, 'f'),
+          aDadosLiquidacoes[iLiquidacoes].sMesCompetencia,
+          montaBotaoRemover(iLiquidacoes)
+        ];]]>
+      </add>
+    </operation>
+  </file>
+  
+  <file path='cai4_solicitacaorepasse.RPC.php'>
+    <operation>
+      <search><![CDATA[$aLiquidacoes[] = array(
+          'iEmpenho' => $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getCodigo() . '/' .
+                        $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getAnoUso(),
+          'iNota'      => $oNotaLiquidacao->getCodigoNotaLiquidacao(),
+          'sCredor'    => urlencode($oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getFornecedor()->getNome()),
+          'nValor'     => $oNotaLiquidacao->getNotaliquidacao()->getValorNota()
+        );]]></search>
+      <add position="replace">
+        <![CDATA[
+        $aLiquidacoes[] = array(
+          'iEmpenho' => $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getCodigo() . '/' .
+                        $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getAnoUso(),
+          'iNota'      => $oNotaLiquidacao->getCodigoNotaLiquidacao(),
+          'sCredor'    => urlencode($oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getFornecedor()->getNome()),
+          'nValor'     => $oNotaLiquidacao->getNotaliquidacao()->getValorNota(),
+          'sMesCompetencia' => $oNotaLiquidacao->getMesCompetencia()
+        );
+          ]]>
+      </add>
+    </operation>
+  </file>
+  
+</modification>

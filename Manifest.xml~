@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <plugin name="RepasseFinanceiro" label="Repasse Financeiro" plugin-version="1.3" ecidade-version="2.3.38" id-modulo="39">
+
+    <files>
+      <!-- rpc -->
+      <file name="cai4_solicitacaorepasse.RPC.php"    path="/cai4_solicitacaorepasse.RPC.php" />
+
+
+      <!-- lookup -->
+      <file name="func_solicitacaorepasse.php"    path="/func_solicitacaorepasse.php" />
+      <file name="func_empnotarepasse.php"    path="/func_empnotarepasse.php" />
+
+
+      <!-- classe -->
+      <file name="db_solicitacaorepasseempnota_classe.php"    path="/classes/db_solicitacaorepasseempnota_classe.php" />
+      <file name="db_solicitacaorepasse_classe.php"    path="/classes/db_solicitacaorepasse_classe.php" />
+      <file name="db_devolucaosolicitacaorepasse_classe.php"    path="/classes/db_devolucaosolicitacaorepasse_classe.php" />
+      <file name="db_autorizacaorepasse_classe.php"    path="/classes/db_autorizacaorepasse_classe.php" />
+
+
+      <!-- model -->
+      <file name="SolicitacaoRepasseFinanceiro.model.php"    path="/model/caixa/SolicitacaoRepasseFinanceiro.model.php" />
+      <file name="NotaSolicitacaoRepasseFinanceiro.model.php"    path="/model/caixa/NotaSolicitacaoRepasseFinanceiro.model.php" />
+      <file name="ConfiguracaoRepasseFinanceiro.model.php"    path="/model/caixa/ConfiguracaoRepasseFinanceiro.model.php" />
+      <file name="AutorizacaoSolicitacaoRepasse.model.php"    path="/model/caixa/AutorizacaoSolicitacaoRepasse.model.php" />
+      <file name="DevolucaoRepasseFinanceiro.model.php"    path="/model/caixa/DevolucaoRepasseFinanceiro.model.php" />
+
+
+      <!-- outro -->
+      <file name="BloqueioControleInterno.xml"    path="/modification/xml/BloqueioControleInterno.xml" />
+      <file name="AutorizacaoRepasse.xml"    path="/modification/xml/AutorizacaoRepasse.xml" />
+      <file name="plugins.solicitacaorepasseempnota.dd.xml"    path="/dd/tabelas/plugins.solicitacaorepasseempnota.dd.xml" />
+      <file name="plugins.solicitacaorepasse.dd.xml"    path="/dd/tabelas/plugins.solicitacaorepasse.dd.xml" />
+      <file name="plugins.devolucaosolicitacaorepasse.dd.xml"    path="/dd/tabelas/plugins.devolucaosolicitacaorepasse.dd.xml" />
+      <file name="plugins.autorizacaorepasse.dd.xml"    path="/dd/tabelas/plugins.autorizacaorepasse.dd.xml" />
+      <file name="cai4_solicitacaorepasse001.php"    path="/cai4_solicitacaorepasse001.php" />
+      <file name="cai4_cancelamentorepasse001.php"    path="/cai4_cancelamentorepasse001.php" />
+      <file name="cai4_autorizacaorepasse001.php"    path="/cai4_autorizacaorepasse001.php" />
+      <file name="cai4_devolucaorepasse001.php"    path="/cai4_devolucaorepasse001.php" />
+      <file name="cai3_autorizacaorepasse002.php" path="/cai3_autorizacaorepasse002.php" />
+    </files>
+
+    <estrutura install="/instalacao.sql" uninstall="/desinstalacao.sql">
+      <estrutura file="/versao_1_1.sql" version="1.1"/>
+      <estrutura file="/versao_1_2.sql" version="1.2"/>
+    </estrutura>
+
+    <menus>
+      <menu type="4">
+        <item name="Repasse Financeiro" file="" liberado-cliente="true" >
+          <item name="Solicitação de Repasse" file="" liberado-cliente="true">
+            <item name="Inclusão" file="cai4_solicitacaorepasse001.php?acao=1" liberado-cliente="true" />
+            <item name="Alteração" file="cai4_solicitacaorepasse001.php?acao=2" liberado-cliente="true" />
+            <item name="Exclusão" file="cai4_solicitacaorepasse001.php?acao=3" liberado-cliente="true" />
+          </item>
+          <item name="Autorização de Repasse" file="cai4_autorizacaorepasse001.php" liberado-cliente="true" />
+          <item name="Cancelamento de Repasse" file="cai4_cancelamentorepasse001.php" liberado-cliente="true" />
+          <item name="Devolução de Repasse" file="cai4_devolucaorepasse001.php" liberado-cliente="true" />
+        </item>
+      </menu>
+    </menus>
+
+    <dependencies>
+      <plugin name="ControleInterno" version="1.3" />
+    </dependencies>
+
+  </plugin>
+</manifest>

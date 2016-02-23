@@ -1,0 +1,78 @@
+<?xml version="1.0" standalone="yes" ?>
+<table name="plugins.solicitacaorepasseempnota" description="Guarda a ligação entre a Solicitação de Repasse Financeiro e a Nota de Liquidação." prefix="" label="Ligação entre Solicitação de Repasse Financeiro e a Nota de Liquidação." type="0">
+  <fields>
+    <field name="sequencial"
+           conteudo="int4"
+           description="Sequencial"
+           inivalue="0"
+           label="Sequencial"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="1"
+           tipoobj="text"
+           labelrel="Sequencial"
+           reference=""
+           ispk="t"
+           hassequence="t">
+      <sequence name="plugins.solicitacaorepasseempnota_sequencial_seq"></sequence>
+    </field>
+    <field name="solicitacaorepasse"
+           conteudo="int4"
+           description="Solicitação de Repasse Financeiro"
+           inivalue="0"
+           label="Solicitação de Repasse Financeiro"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="1"
+           tipoobj="text"
+           labelrel="Solicitação de Repasse Financeiro"
+           reference=""
+           ispk="f"
+           hassequence="f">
+    </field>
+    <field name="empnota"
+           conteudo="int4"
+           description="Nota de Liquidação"
+           inivalue="0"
+           label="Nota de Liquidação"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="1"
+           tipoobj="text"
+           labelrel="Nota de Liquidação"
+           reference=""
+           ispk="f"
+           hassequence="f">
+    </field>
+    <field name="estornado"
+           conteudo="bool"
+           description="Estornado"
+           inivalue="0"
+           label="Estornado"
+           size="10"
+           null="f"
+           uppercase="f"
+           autocompl="f"
+           aceitatipo="1"
+           tipoobj="text"
+           labelrel="Estornado"
+           reference=""
+           ispk="f"
+           hassequence="f">
+    </field>
+  </fields>
+  <primarykey>
+    <fieldpk name="sequencial"></fieldpk>
+  </primarykey>
+  <foreignkeys>
+    <foreignkey reference="plugins.solicitacaorepasse" inner='true'>
+      <fieldfk name="solicitacaorepasse" reference="sequencial"></fieldfk>
+    </foreignkey>
+  </foreignkeys>
+</table>
