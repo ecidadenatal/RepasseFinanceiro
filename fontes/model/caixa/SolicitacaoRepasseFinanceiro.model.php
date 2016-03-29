@@ -459,7 +459,7 @@ class SolicitacaoRepasseFinanceiro {
       throw new DBException("Sem transação com banco de dados");
     }
 
-    if (!$this->temDotacao()) {
+    if (!$this->temDotacao() && $this->iAnexo != 5) {
 
       $sMensagem  = "Não é possível cadastrar Solicitação de Repasse, ";
       $sMensagem .= "pois não existe Dotação cadastrada para o Órgão, Unidade, Recurso e Anexo informados.";
