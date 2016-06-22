@@ -138,9 +138,10 @@ $iAnoSessao = db_getsession('DB_anousu');
       }
 
       $aWhere[]  = "e69_codnota not in (select empnota from plugins.solicitacaorepasseempnota where estornado = false)";
-      $aWhere[]  = "e70_valor = e70_vlrliq";
+      $aWhere[]  = "(e70_valor - e70_vlranu) = e70_vlrliq";
+      $aWhere[]  = "(e70_valor - e70_vlranu) > 0";
       $aWhere[]  = "pagordemele.e53_valor <> pagordemele.e53_vlrpag";
-      $aWhere[]  = "e70_vlranu = 0";
+;
 
       //Busca para quando a func é chamada e exida.
       if (!isset($pesquisa_chave)) {
