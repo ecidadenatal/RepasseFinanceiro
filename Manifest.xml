@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-  <plugin name="RepasseFinanceiro" label="Repasse Financeiro" plugin-version="1.3" ecidade-version="2.3.38" id-modulo="39">
+  <plugin name="RepasseFinanceiro" label="Repasse Financeiro" plugin-version="1.4" ecidade-version="2.3.50" id-modulo="39">
 
     <files>
       <!-- rpc -->
@@ -62,7 +62,7 @@
     </menus>
 
     <dependencies>
-      <plugin name="ControleInterno" version="1.3" />
+      <plugin name="ControleInterno" version="1.6" />
     </dependencies>
 
   </plugin>
