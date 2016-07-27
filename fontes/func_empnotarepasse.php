@@ -125,7 +125,7 @@ $iAnoSessao = db_getsession('DB_anousu');
       //Somente liquidações aprovadas no controle interno.
       $sWhereControleInterno  = " (exists(select 1 from plugins.empenhonotacontroleinterno ";
       $sWhereControleInterno .= "               where nota = e71_codnota ";
-      $sWhereControleInterno .= "               and situacao >= " . ControleInterno::SITUACAO_APROVADA . ")";
+      $sWhereControleInterno .= "               and situacao in (" . ControleInterno::SITUACAO_APROVADA . ", " . ControleInterno::SITUACAO_LIBERADO_AUTOMATICO . "))";
       $sWhereControleInterno .= " )";
       $aWhere[]               = $sWhereControleInterno;
 
