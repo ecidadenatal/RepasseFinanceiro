@@ -28,7 +28,6 @@
 
 
       <!-- outro -->
-      <file name="BloqueioControleInterno.xml"    path="/modification/xml/BloqueioControleInterno.xml" />
       <file name="AutorizacaoRepasse.xml"    path="/modification/xml/AutorizacaoRepasse.xml" />
       <file name="plugins.solicitacaorepasseempnota.dd.xml"    path="/dd/tabelas/plugins.solicitacaorepasseempnota.dd.xml" />
       <file name="plugins.solicitacaorepasse.dd.xml"    path="/dd/tabelas/plugins.solicitacaorepasse.dd.xml" />
@@ -60,10 +59,6 @@
         </item>
       </menu>
     </menus>
-
-    <dependencies>
-      <plugin name="ControleInterno" version="1.6" />
-    </dependencies>
 
   </plugin>
 </manifest>
