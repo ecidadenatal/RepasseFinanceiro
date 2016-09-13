@@ -72,6 +72,9 @@ class NotaSolicitacaoRepasseFinanceiro {
     if (empty($this->oNotaLiquidacao) && $this->getCodigoNotaLiquidacao()) {
       $this->oNotaLiquidacao = new NotaLiquidacao($this->getCodigoNotaLiquidacao());
     }
+    if ($this->oNotaLiquidacao->getValorLiquidado() == 0) {
+      throw new BusinessException("Não é possível salvar a Solicitação de Repasse. A Nota de Liquidação {$this->getCodigoNotaLiquidacao()} foi anulada.");
+    }
 
     return $this->oNotaLiquidacao;
   }
