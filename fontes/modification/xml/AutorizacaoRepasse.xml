@@ -339,4 +339,29 @@
       </add>
     </operation>
   </file>
+
+  <file path='classes/empenho.php'>
+    <operation>
+      <search regex="true"><![CDATA[(function.*estornaLiq.*\{)]]></search>
+      <add>
+        <![CDATA[$1
+    if (SolicitacaoRepasseFinanceiro::notaTemSolicitacao($codnota)) {
+      $this->lSqlErro  = true;
+      $this->sMsgErro  = "Não é possível anular a nota {$codnota}. A nota está numa solicitação de repasse.";
+    }]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\(float\).*\$totalLiquidado.*(\n*.*)for.*count\(\$aNotas\).*\{)]]></search>
+      <add>
+        <![CDATA[$1
+        if (SolicitacaoRepasseFinanceiro::notaTemSolicitacao($aNotas[$i])) {          
+          $this->lSqlErro  = true;
+          $this->sMsgErro  = "Não é possível anular a nota {$aNotas[$i]}. A nota está numa solicitação de repasse.";
+        }]]>
+      </add>
+    </operation>
+  </file>  
+
 </modification>
