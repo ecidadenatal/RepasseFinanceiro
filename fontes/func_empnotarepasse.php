@@ -183,13 +183,12 @@ $iAnoSessao = db_getsession('DB_anousu');
           $aWhere[] = " z01_nome like '$chave_z01_nome%' ";
         }
 
+        //Monta SQL e faz a busca,
         if (!in_array($iAnexo, explode(',', ConfiguracaoRepasseFinanceiro::getAnexoParaRP()))) {
           $aWhere[] = "o58_localizadorgastos = '{$iAnexo}'";             
         }
 
-        //Monta SQL e faz a busca,
         $sql = $clempnota->sql_query_notas("", $sCampos, "", implode(" and ", $aWhere)  . " and e60_anousu >= {$iAnoSessao} ");
-
         if (in_array($iAnexo, explode(',', ConfiguracaoRepasseFinanceiro::getAnexoParaRP()))) {
 
           $aWhere[] = "exists (select 1 from empresto where empresto.e91_numemp = empempenho.e60_numemp and empresto.e91_anousu = {$iAnoSessao})";

@@ -538,11 +538,11 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
    */
   function buscarContaDestino(lMostrar) {
 
-    var sQuerySring = 'lIgnorarFiltroDespesa=true&unidade='+$('unidade_numero').value+'&orgao='+$('orgao_numero').value+'&funcao_js=parent.retornoContaDestino|0|2';
+    var sQuerySring = 'lIgnorarFiltroDespesa=true&funcao_js=parent.retornoContaDestino|0|2';
     var sArquivo    = 'func_saltes.php';
     var sTituloTela = 'Pesquisa Conta de Destino';
     if (!lMostrar) {
-      sQuerySring = 'pesquisa_chave=' + $F('conta_destino_numero') + '&lIgnorarFiltroDespesa=true&unidade=' + $('unidade_numero').value + '&orgao=' + $('orgao_numero').value + '&funcao_js=parent.retornoContaDestinoChave';
+      sQuerySring = 'pesquisa_chave=' + $F('conta_destino_numero') + '&lIgnorarFiltroDespesa=true&funcao_js=parent.retornoContaDestinoChave';
     }
 
     js_OpenJanelaIframe('', 'db_iframe_saltes', sArquivo +'?' +sQuerySring, sTituloTela, lMostrar);

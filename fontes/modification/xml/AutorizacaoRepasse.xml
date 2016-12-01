@@ -314,31 +314,6 @@
       </add>
     </operation>
   </file>
-  
-  <file path='func_saltes.php'>
-    <operation>
-      <search><![CDATA[/* Extensao RepasseFinanceiro */]]></search>
-      <add position="after">
-        <![CDATA[
-      if (isset($orgao) && isset($unidade)) {
-
-        $oDepartOrg = new cl_db_departorg();
-        $sSqlDepartOrg = $oDepartOrg->sql_query(null, null, "distinct db01_coddepto", null, "db01_orgao = $orgao and db01_unidade = $unidade");
-        $rsDepartOrg   = $oDepartOrg->sql_record($sSqlDepartOrg);
-
-        $aCodDepart = array();
-        $aDepart = db_utils::getCollectionByRecord($rsDepartOrg);
-        
-        foreach ($aDepart as $depart) {
-          $aCodDepart[] .= $depart->db01_coddepto;
-        }
-
-        $sDepart = implode(', ', $aCodDepart);
-        $dbwhere .= " and k13_conta in (select saltes from plugins.saltesdepart where depart in (".$sDepart."))";
-      }]]>
-      </add>
-    </operation>
-  </file>
 
   <file path='classes/empenho.php'>
     <operation>
