@@ -10,3 +10,5 @@ drop sequence if exists solicitacaorepasseempnota_sequencial_seq;
 
 drop table if exists solicitacaorepasse;
 drop sequence if exists solicitacaorepasse_sequencial_seq;
+
+drop table if exists plugins.recebimentorepassecontas;

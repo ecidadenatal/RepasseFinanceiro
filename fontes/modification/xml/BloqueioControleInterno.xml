@@ -8,7 +8,7 @@
       <search><![CDATA[/* [SolicitacaoRepasse] - Extensao */]]></search>
       <add position="after">
         <![CDATA[
-      if (SolicitacaoRepasseFinanceiro::notaTemSolicitacao($aNotas[$i])) {
+      if (SolicitacaoRepasseFinanceiro::notaTemSolicitacao($oParam->iCodigoNota)) {
         throw new BusinessException("Não é possível alterar a liberação. A Nota de Liquidação já possui uma Solicitação de Repasse Financeiro.");
       }
         ]]>
