@@ -187,139 +187,27 @@
           ]]>
       </add>
     </operation>
-  </file>
 
-  <file path='cai4_solicitacaorepasse001.php'>
+    <!-- MODIFICACAO NATAL-->
     <operation>
-      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte1] */]]></search>
-      <add position="after">
-        <![CDATA[
-         db_input('liquidacao_mescompetencia', 10, 0, true, 'hidden', 3);]]>
-      </add>
-    </operation>
-    
-    <operation>
-      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte2] */
-    var sQuerySring           = sQuerySringAdicional + '&funcao_js=parent.retornoLiquidacao|0|3|2|6';]]></search>
-      <add position="replace">
-        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte2] */
-    var sQuerySring           = sQuerySringAdicional + '&funcao_js=parent.retornoLiquidacao|0|3|2|6|8';]]>
-      </add>
-    </operation>
-    
-    <operation>
-      <search><![CDATA[  /* [Inicio plugin LiquidacaoCompetencia - parte3] */
-  function retornoLiquidacao(iCodigo, iCodigoEmpenho, sDescricao, nValor, lErro) {]]></search>
-      <add position="replace">
-        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte3] */
-    function retornoLiquidacao(iCodigo, iCodigoEmpenho, sDescricao, nValor, sMesCompetencia, lErro) {]]>
-      </add>
-    </operation>
-    
-    <operation>
-      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte4] */]]></search>
-      <add position="after">
-        <![CDATA[
-	$('liquidacao_mescompetencia').value = sMesCompetencia;]]>
-      </add>
-    </operation>    
-
-    <operation>
-      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte5] */
-    oGridLiquidacoes.setCellAlign(['center', 'center', 'left', 'right', 'center']);
-    oGridLiquidacoes.setHeader(["Empenho", "Nota", 'Credor', 'Valor', 'Ações']);]]></search>
-      <add position="replace">
-        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte5] */
-    oGridLiquidacoes.setCellAlign(['center', 'center', 'left', 'right', 'center', 'center']);
-    oGridLiquidacoes.setHeader(["Empenho", "Nota", 'Credor', 'Valor', 'Competência', 'Ações']);]]>
-      </add>
-    </operation>    
-
-    <operation>
-      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte6] */]]></search>
-      <add position="after">
-        <![CDATA[
-	var sMesCompetencia = $F('liquidacao_mescompetencia');]]>
+      <search regex="true"><![CDATA[(sql_query_contas_vinculadas)]]></search>
+      <add>
+        <![CDATA[$1_natal]]>
       </add>
     </operation>
 
-    <operation>
-      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte7] */
-    var aLinha                        = [iCodigoEmpenho,
-      iCodigoNota,
-      sNomeCredor,
-      js_formatar(nValor, 'f'),
-      montaBotaoRemover(aLiquidacoes.length)];]]></search>
-      <add position="replace">
-        <![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte7] */
-    var aLinha                        = [iCodigoEmpenho,
-      iCodigoNota,
-      sNomeCredor,
-      js_formatar(nValor, 'f'),
-      sMesCompetencia,
-      montaBotaoRemover(aLiquidacoes.length)];]]>
-      </add>
-    </operation>
-
-    <operation>
-      <search><![CDATA[/* [Inicio plugin LiquidacaoCompetencia - parte8] */]]></search>
-      <add position="after">
-        <![CDATA[
-	$('liquidacao_mescompetencia').value = '';]]>
-      </add>
-    </operation>
-
-    <operation>
-      <search><![CDATA[var aLinha = [
-          aDadosLiquidacoes[iLiquidacoes].iEmpenho,
-          aDadosLiquidacoes[iLiquidacoes].iNota,
-          aDadosLiquidacoes[iLiquidacoes].sCredor.urlDecode(),
-          js_formatar(aDadosLiquidacoes[iLiquidacoes].nValor, 'f'),
-          montaBotaoRemover(iLiquidacoes)
-        ];]]></search>
-      <add position="replace">
-        <![CDATA[
-        var aLinha = [
-          aDadosLiquidacoes[iLiquidacoes].iEmpenho,
-          aDadosLiquidacoes[iLiquidacoes].iNota,
-          aDadosLiquidacoes[iLiquidacoes].sCredor.urlDecode(),
-          js_formatar(aDadosLiquidacoes[iLiquidacoes].nValor, 'f'),
-          aDadosLiquidacoes[iLiquidacoes].sMesCompetencia,
-          montaBotaoRemover(iLiquidacoes)
-        ];]]>
-      </add>
-    </operation>
   </file>
   
-  <file path='cai4_solicitacaorepasse.RPC.php'>
-    <operation>
-      <search><![CDATA[$aLiquidacoes[] = array(
-          'iEmpenho' => $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getCodigo() . '/' .
-                        $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getAnoUso(),
-          'iNota'      => $oNotaLiquidacao->getCodigoNotaLiquidacao(),
-          'sCredor'    => urlencode($oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getFornecedor()->getNome()),
-          'nValor'     => $oNotaLiquidacao->getNotaliquidacao()->getValorNota()
-        );]]></search>
-      <add position="replace">
-        <![CDATA[
-        $aLiquidacoes[] = array(
-          'iEmpenho' => $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getCodigo() . '/' .
-                        $oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getAnoUso(),
-          'iNota'      => $oNotaLiquidacao->getCodigoNotaLiquidacao(),
-          'sCredor'    => urlencode($oNotaLiquidacao->getNotaliquidacao()->getEmpenho()->getFornecedor()->getNome()),
-          'nValor'     => $oNotaLiquidacao->getNotaliquidacao()->getValorNota(),
-          'sMesCompetencia' => $oNotaLiquidacao->getMesCompetencia()
-        );
-          ]]>
-      </add>
-    </operation>
-  </file>
+<!--                                          -->
+<!-- INICIO DAS CUSTOMIZACOES EQUIPE NATAL/RN --> 
+<!--                                          -->
   
   <file path='func_saltes.php'>
     <operation>
-      <search><![CDATA[/* Extensao RepasseFinanceiro */]]></search>
-      <add position="after">
-        <![CDATA[
+      <search regex="true"><![CDATA[(\$dbwhere\s*=\s*("|')\s*("|');)]]></search>
+      <add>
+        <![CDATA[$1
+
       if (isset($orgao) && isset($unidade)) {
 
         $oDepartOrg = new cl_db_departorg();
@@ -362,6 +250,65 @@
         }]]>
       </add>
     </operation>
-  </file>  
+  </file>   
+
+  <file path='classes/db_empagetipo_classe.php'>
+    <operation>
+      <search regex="true"><![CDATA[(function sql_query_contas_vinculadas\s*\(.*\{)]]></search>
+      <add>
+        <![CDATA[
+  //inicio plugin GeracaoArquivoOBN      
+  function sql_query_contas_vinculadas_natal ($e83_codtipo=null,$campos="*",$ordem=null,$sWhere, $lVinculadas = false) {
+  
+    $sSql = "select ";
+    if($campos != "*" ){
+        $campos_sql = split("#",$campos);
+        $virgula = "";
+        for($i=0;$i<sizeof($campos_sql);$i++){
+            $sSql .= $virgula.$campos_sql[$i];
+            $virgula = ",";
+        }
+    }else{
+        $sSql .= $campos;
+    }
+    $sSql .= " from empagetipo ";
+    $sSql .= "      left join (select distinct
+                                     c61_reduz,
+                                     C61_CODIGO,
+                                     c61_anousu,
+                                     e60_anousu
+                                from empempenho
+                                     inner join orcdotacao     on e60_coddot  = o58_coddot and e60_anousu = o58_anousu
+                                     inner join conplanoreduz  on (c61_anousu = o58_anousu or c61_anousu = ".db_getsession("DB_anousu").")
+                                                              and c61_codigo  = o58_codigo
+                                     left join pagordem on e60_numemp       = e50_numemp
+                                     left join saltes   on c61_reduz = k13_conta
+                               where c61_instit=".db_getsession("DB_instit");
+    if ($sWhere != '') {
+        $sSql .= " and {$sWhere}";
+    }
+    $sSql .= " )";
+    $sSql .= " as x on e83_conta = c61_reduz";
+    $sSql .= " where c61_reduz is not null ";
+  
+    if (USE_PCASP) {
+        $sSql .= " and c61_anousu = ".db_getsession("DB_anousu")." or c61_anousu = e60_anousu";
+    }
+  
+    if ($lVinculadas) {
+  
+        $sSql .= " or e83_conta in ";
+        $sSql .= " (select c61_reduz from conplanoreduz where c61_anousu =".db_getsession("DB_anousu");
+        $sSql .= " and c61_codigo = 1 and c61_instit = ".db_getsession("DB_instit").")";
+    }
+  
+    return $sSql;
+  }
+  //fim plugin GeracaoArquivoOBN
+  
+  $1]]>
+      </add>
+    </operation>
+  </file>
 
 </modification>

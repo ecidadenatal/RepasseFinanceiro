@@ -25,10 +25,10 @@
  *                                licenca/licenca_pt.txt
  */
 
-require_once "libs/db_stdlib.php";
-require_once "libs/db_conecta_plugin.php";
-require_once "libs/db_sessoes.php";
-require_once "dbforms/db_funcoes.php";
+require_once modification("libs/db_stdlib.php");
+require_once modification("libs/db_conecta_plugin.php");
+require_once modification("libs/db_sessoes.php");
+require_once modification("dbforms/db_funcoes.php");
 
 $oParam            = json_decode(str_replace("\\","",$_POST["json"]));
 $oRetorno          = new stdClass();
@@ -54,15 +54,14 @@ try {
 
       $oUnidade = new Unidade($oParam->iUnidadeExercicio, $oParam->iUnidadeOrgao, $oParam->iUnidade);
       $oRecurso = new Recurso($oParam->iRecurso);
-      $oContaTesouraria = new contaTesouraria($oParam->iContaDestino);
-      $oData = new DBDate($oParam->sData);
+      $oData = new DBDate(urldecode($oParam->sData));
 
       $iSolicitacao = !empty($oParam->iSolicitacao) ? $oParam->iSolicitacao : null;
       $oSolicitacaoRepasse = new SolicitacaoRepasseFinanceiro($iSolicitacao);
       $oSolicitacaoRepasse->setUnidade($oUnidade);
       $oSolicitacaoRepasse->setTipo($oParam->iTipo);
       $oSolicitacaoRepasse->setRecurso($oRecurso);
-      $oSolicitacaoRepasse->setConta($oContaTesouraria);
+      $oSolicitacaoRepasse->setConta($oParam->iContaDestino);
       $oSolicitacaoRepasse->setAnexo($oParam->iAnexo);
       $oSolicitacaoRepasse->setValor($oParam->nValor);
       $oSolicitacaoRepasse->setMotivo(addslashes(db_stdClass::normalizeStringJson($oParam->sMotivo)));
@@ -135,6 +134,23 @@ try {
 
       $oDados->aLiquidacoes = $aLiquidacoes;
       $oRetorno->dados = $oDados;
+
+      break;
+
+    case 'getDadosRecebimento':
+
+      $iInstitCredito = db_getsession('DB_instit');
+      $iInstitDebito  = $oParam->iInstitDestino;
+
+      $oDaoRecebimentoRepasseContas = db_utils::getDao("recebimentorepassecontas");
+      $rsRecebimentoRepasseContas   = $oDaoRecebimentoRepasseContas->sql_record($oDaoRecebimentoRepasseContas->sql_query(null, null, "conta_debito_origem, cgm_instituicao_destino", null, "instituicao_origem = {$iInstitCredito} and instituicao_destino = {$iInstitDebito}"));
+      if ($oDaoRecebimentoRepasseContas->numrows == 0){
+        throw new Exception("Erro ao buscar conta de destino");
+      }
+      
+      $oDadosRecebimento = db_utils::fieldsMemory($rsRecebimentoRepasseContas, 0);
+      $oRetorno->conta  = $oDadosRecebimento->conta_debito_origem;
+      $oRetorno->credor = $oDadosRecebimento->cgm_instituicao_destino;
 
       break;
 

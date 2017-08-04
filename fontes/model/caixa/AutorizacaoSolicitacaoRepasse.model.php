@@ -127,7 +127,7 @@ class AutorizacaoSolicitacaoRepasse {
   public function autorizar() {
 
     if ($this->getSolicitacao()->getTipo() == SolicitacaoRepasseFinanceiro::TIPO_REPASSE) {
-
+      
       if ($this->oSolicitacaoRepasse->getConta()->getCodigoConta() == $this->oContaPagadora->getCodigoConta()) {
         throw new Exception("A solicitação {$this->oSolicitacaoRepasse->getCodigo()} possui Conta Pagadora igual a Conta Destino do repasse. Não é possível incluir uma Autorização com contas iguais.");
       }

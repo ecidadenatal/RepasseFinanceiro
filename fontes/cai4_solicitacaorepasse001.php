@@ -114,21 +114,6 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
 
         <tr>
           <td class="bold">
-            <label for="recurso_numero">
-              <?php db_ancora('Recurso:', 'buscarRecurso(true)', $iOpcao, null, 'recurso_numero_ancora'); ?>
-            </label>
-          </td>
-          <td>
-            <?php
-            $Srecurso_numero = 'Recurso';
-            db_input('recurso_numero', 10, 1, true, 'text', $iOpcao, 'onChange="buscarRecurso(false)"');
-            db_input('recurso_descricao', 44, 0, true, 'text', 3);
-            ?>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="bold">
             <label for="anexo_numero">
               <?php db_ancora('Anexo:', 'buscarAnexo(true)', $iOpcao, null, 'anexo_numero_ancora'); ?>
             </label>
@@ -138,6 +123,21 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
             $Sanexo_numero = 'Anexo';
             db_input('anexo_numero', 10, 1, true, 'text', $iOpcao, 'onChange="buscarAnexo(false)"');
             db_input('anexo_descricao', 44, 0, true, 'text', 3);
+            ?>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="bold">
+            <label for="recurso_numero">
+              <?php db_ancora('Recurso:', 'buscarRecurso(true)', $iOpcao, null, 'recurso_numero_ancora'); ?>
+            </label>
+          </td>
+          <td>
+            <?php
+            $Srecurso_numero = 'Recurso';
+            db_input('recurso_numero', 10, 1, true, 'text', $iOpcao, 'onChange="buscarRecurso(false)"');
+            db_input('recurso_descricao', 44, 0, true, 'text', 3);
             ?>
           </td>
         </tr>
@@ -419,9 +419,11 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
       iContaDestino:     $F('conta_destino_numero'),
       sData:             $F('data_repasse'),
       nValor:            $F('valor_repasse').getNumber(),
-      sMotivo:           encodeURIComponent(tagString($F('motivo'))),
+      sMotivo:           $F('motivo'),
       aNotas:            aNotas
     };
+
+
 
     new AjaxRequest(sRPC, oParameters, fnRetorno).setMessage('Aguarde, salvando solicitação de repasse...').execute();
   }
@@ -504,12 +506,16 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
    */
   function buscarRecurso(lMostrar) {
 
-    var sQuerySring = 'funcao_js=parent.retornoRecurso|0|1';
+    var sAtivo = '';
+    if ($F('anexo_numero') == 5) {
+	sAtivo = 'ativo=1&';
+    }	   
+    var sQuerySring = sAtivo+'funcao_js=parent.retornoRecurso|0|1';
     var sArquivo    = 'func_orctiporec.php';
     var sTituloTela = 'Pesquisa de Recurso';
 
     if (!lMostrar) {
-      sQuerySring = 'pesquisa_chave=' + $F('recurso_numero') + '&funcao_js=parent.retornoRecursoChave';
+      sQuerySring = sAtivo+'pesquisa_chave=' + $F('recurso_numero') + '&funcao_js=parent.retornoRecursoChave';
     }
 
     js_OpenJanelaIframe('', 'db_iframe_orctiporec', sArquivo +'?' +sQuerySring, sTituloTela, lMostrar);
@@ -538,11 +544,11 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
    */
   function buscarContaDestino(lMostrar) {
 
-    var sQuerySring = 'lIgnorarFiltroDespesa=true&unidade='+$('unidade_numero').value+'&orgao='+$('orgao_numero').value+'&funcao_js=parent.retornoContaDestino|0|2';
+    var sQuerySring = 'lIgnorarFiltroDespesa=true&funcao_js=parent.retornoContaDestino|0|2';
     var sArquivo    = 'func_saltes.php';
     var sTituloTela = 'Pesquisa Conta de Destino';
     if (!lMostrar) {
-      sQuerySring = 'pesquisa_chave=' + $F('conta_destino_numero') + '&lIgnorarFiltroDespesa=true&unidade=' + $('unidade_numero').value + '&orgao=' + $('orgao_numero').value + '&funcao_js=parent.retornoContaDestinoChave';
+      sQuerySring = 'pesquisa_chave=' + $F('conta_destino_numero') + '&lIgnorarFiltroDespesa=true&funcao_js=parent.retornoContaDestinoChave';
     }
 
     js_OpenJanelaIframe('', 'db_iframe_saltes', sArquivo +'?' +sQuerySring, sTituloTela, lMostrar);

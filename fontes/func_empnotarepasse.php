@@ -141,7 +141,6 @@ $iAnoSessao = db_getsession('DB_anousu');
       $aWhere[]  = "(e70_valor - e70_vlranu) = e70_vlrliq";
       $aWhere[]  = "(e70_valor - e70_vlranu) > 0";
       $aWhere[]  = "pagordemele.e53_valor <> pagordemele.e53_vlrpag";
-;
 
       //Busca para quando a func é chamada e exida.
       if (!isset($pesquisa_chave)) {
