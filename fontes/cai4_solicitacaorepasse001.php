@@ -25,12 +25,12 @@
  *                                licenca/licenca_pt.txt
  */
 
-require_once ("libs/db_stdlib.php");
-require_once "libs/db_conecta_plugin.php";
-require_once ("libs/db_sessoes.php");
-require_once ("libs/db_utils.php");
-require_once ("libs/db_app.utils.php");
-require_once ("dbforms/db_funcoes.php");
+require_once(modification("libs/db_stdlib.php"));
+require_once(modification("libs/db_conecta_plugin.php"));
+require_once(modification("libs/db_sessoes.php"));
+require_once(modification("libs/db_utils.php"));
+require_once(modification("libs/db_app.utils.php"));
+require_once(modification("dbforms/db_funcoes.php"));
 
 $oGet   = db_utils::postMemory($_GET);
 $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
@@ -108,6 +108,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
             $Sunidade_numero = 'Unidade';
             db_input('unidade_numero', 10, 1, true, 'text', $iOpcao, 'onChange="buscarUnidade(false)"');
             db_input('unidade_descricao', 44, 0, true, 'text', 3);
+            db_input('instituicao_unidade', 10, 0, true, 'hidden');
             ?>
           </td>
         </tr>
@@ -238,6 +239,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
 <script type="text/javascript">
 
   var aLiquidacoes = [];
+  var iInstituicao = <?=db_getsession("DB_instit")?>;
 
   /**
    * Faz a validação dos campos de preenchimento obrigatório.
@@ -330,6 +332,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
     $('codigo_repasse').value          = '';
     $('unidade_numero').value          = '';
     $('unidade_descricao').value       = '';
+    $("instituicao_unidade").value     = '';
     $('orgao_numero').value            = '';
     $('orgao_descricao').value         = '';
     $('orgao_unidade_exercicio').value = '';
@@ -419,7 +422,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
       iContaDestino:     $F('conta_destino_numero'),
       sData:             $F('data_repasse'),
       nValor:            $F('valor_repasse').getNumber(),
-      sMotivo:           $F('motivo'),
+      sMotivo:           encodeURIComponent(tagString($F('motivo'))),
       aNotas:            aNotas
     };
 
@@ -489,7 +492,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
       return false;
     }
 
-    var sQuerySring = 'orgao=' + iOrgao + '&funcao_js=parent.retornoUnidade|2|4|0';
+    var sQuerySring = 'orgao=' + iOrgao + '&funcao_js=parent.retornoUnidade|2|4|0|o41_instit';
     var sArquivo    = 'func_orcunidade.php';
     var sTituloTela = 'Pesquisar Unidade';
 
@@ -551,9 +554,43 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
       sQuerySring = 'pesquisa_chave=' + $F('conta_destino_numero') + '&lIgnorarFiltroDespesa=true&funcao_js=parent.retornoContaDestinoChave';
     }
 
+    /*
+     * Se a instituicao da unidade selecionada nao for a mesma da sessao, trata-se de uma transferencia de duodecimo
+     * Neste caso temos que pegar as contas de repasse, mesma funcionalidade das transferencias de duodecimo
+     */ 
+    if ($F("instituicao_unidade") == "") {
+      alert("Para selecionar uma conta, você deve primeiro informar a Unidade.");
+      return false;
+    } 
+    
+	if ($F("instituicao_unidade") != iInstituicao) {
+		
+		var sQuerySring = 'iTipoTransferencia=1&lContaCredito=false&funcao_js=parent.retornoContaDestino|reduzido|descricao';
+	    var sArquivo    = 'func_contaeventocontabil.php';
+	    var sTituloTela = 'Pesquisa Conta de Destino';
+	    if (!lMostrar) {
+	      sQuerySring = 'pesquisa_chave=' + $F('conta_destino_numero') + '&iTipoTransferencia=1&lContaCredito=false&funcao_js=parent.retornoContaDestinoChave';
+	    }
+
+	}
+
     js_OpenJanelaIframe('', 'db_iframe_saltes', sArquivo +'?' +sQuerySring, sTituloTela, lMostrar);
   }
 
+
+  function retornoDadosRecebimento(oRetorno, lErro){
+    
+    if (lErro) {
+      alert(oRetorno.message.urlDecode());
+      return false;
+    } else {
+
+      if (oRetorno.conta != "") {  
+        $('conta_destino_numero').value = oRetorno.conta;   
+        buscarContaDestino(false);
+      }
+    }
+  }
   /**
    * Faz a busca por liquidações.
    * @param {boolean} lMostrar Se deve mostrar a janela para busca ou fazer busca pela chave.
@@ -598,6 +635,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
 
     $('unidade_numero').value    = '';
     $('unidade_descricao').value = '';
+    $("instituicao_unidade").value = '';
     removerTodasLiquidacoes();
     retornoOrgao($F('orgao_numero'), sDescricao, lErro);
   }
@@ -616,7 +654,8 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
     if (lErro) {
       iExercicio   = '';
     }
-    retornoUnidade($F('unidade_numero'), sDescricao, iExercicio, lErro);
+
+    retornoUnidade($F('unidade_numero'), sDescricao, iExercicio, iInstituicao, lErro);
   }
 
   /**
@@ -659,6 +698,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
 
       $('unidade_numero').value    = '';
       $('unidade_descricao').value = '';
+      $("instituicao_unidade").value = '';
       removerTodasLiquidacoes();
     }
     db_iframe_orcorgao.hide();
@@ -673,7 +713,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
    * @param {int}     iExercicio
    * @param {boolean} lErro
    */
-  function retornoUnidade(iCodigo, sDescricao, iExercicio, lErro) {
+  function retornoUnidade(iCodigo, sDescricao, iExercicio, iInstituicaoUnidade, lErro) {
 
     //Se o valor selecionado for diferente do atual, limpa a grid de liquidações.
     if ($('unidade_numero').value != iCodigo || $('orgao_unidade_exercicio').value != iExercicio) {
@@ -682,10 +722,25 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
 
     if (lErro) {
       iExercicio = '';
+      iInstituicaoUnidade = '';
     }
+        
     db_iframe_orcunidade.hide();
     retorno('unidade', iCodigo, sDescricao, lErro, false);
     $('orgao_unidade_exercicio').value = iExercicio;
+    $("instituicao_unidade").value = iInstituicaoUnidade;
+  
+    if ($F("instituicao_unidade") != iInstituicao) {
+      var iInstituicaoDestino = iInstituicaoUnidade;
+      var sRPC        = 'cai4_solicitacaorepasse.RPC.php';
+
+      var oParam = {
+        exec:     'getDadosRecebimento',
+        iInstitDestino: iInstituicaoDestino
+      };
+
+      new AjaxRequest(sRPC, oParam, retornoDadosRecebimento).setMessage('Aguarde, carregando a solicitação de repasse...').execute();
+    }
   }
 
   /**

@@ -127,8 +127,8 @@ class AutorizacaoSolicitacaoRepasse {
   public function autorizar() {
 
     if ($this->getSolicitacao()->getTipo() == SolicitacaoRepasseFinanceiro::TIPO_REPASSE) {
-      
-      if ($this->oSolicitacaoRepasse->getConta()->getCodigoConta() == $this->oContaPagadora->getCodigoConta()) {
+
+      if ($this->oSolicitacaoRepasse->getConta() == $this->oContaPagadora->getCodigoConta()) {
         throw new Exception("A solicitação {$this->oSolicitacaoRepasse->getCodigo()} possui Conta Pagadora igual a Conta Destino do repasse. Não é possível incluir uma Autorização com contas iguais.");
       }
       $this->criarTransferencia();
@@ -222,19 +222,34 @@ class AutorizacaoSolicitacaoRepasse {
       $sMsg .= "É necessário informar na configuração do plugin o código do Histórico.";
       throw new Exception($sMsg);
     }
+    /*
+     * verificamos o tipo de operação para a geração do slip
+     */
+    $iOperacao = 13;
+    
+    $iInstituicaoUnidadeRepasse =  $this->getSolicitacao()->getUnidade()->getInstituicao()->getCodigo();
+    if (db_getsession("DB_instit") != $iInstituicaoUnidadeRepasse) {
+      $iOperacao = 1;  
+    }
 
-    $oTransferencia = TransferenciaFactory::getInstance(13);
+    $oTransferencia = TransferenciaFactory::getInstance($iOperacao);
     $oTransferencia->setSituacao(1);
     $oTransferencia->setCaracteristicaPeculiarCredito('000');
     $oTransferencia->setCaracteristicaPeculiarDebito('000');
     $oTransferencia->setData($this->dtAutorizacao->getDate());
     $oTransferencia->setContaCredito($this->oContaPagadora->getCodigoReduzido());
-    $oTransferencia->setContaDebito($this->oSolicitacaoRepasse->getConta()->getCodigoReduzido());
+    $oTransferencia->setContaDebito($this->oSolicitacaoRepasse->getConta());
     $oTransferencia->setHistorico($iCodigoHistorico);
     $oTransferencia->setValor($this->oSolicitacaoRepasse->getValor());
     $oTransferencia->setObservacao("Gerado automaticamente para a autorização de repasse referente a solicitação {$this->oSolicitacaoRepasse->getCodigo()}.");
     $oTransferencia->setInstituicao($this->oInstituicao->getCodigo());
     $oTransferencia->setCodigoCgm($oCGM->getCodigo());
+
+    //caso seja transferencia bancaria (duodecimo) setamos a instituicao de destino
+    if ($iOperacao == 1) {
+     $oTransferencia->setInstituicaoDestino($iInstituicaoUnidadeRepasse);
+    }
+
     $oTransferencia->salvar();
 
     $this->oTransferencia = $oTransferencia;

@@ -49,12 +49,12 @@ class cl_solicitacaorepasse extends DAOBasica {
     $sSqlBusca .= "                              and orcdotacao.o58_orgao   = orcunidade.o41_orgao   ";
     $sSqlBusca .= "                              and orcdotacao.o58_unidade = orcunidade.o41_unidade ";
     $sSqlBusca .= "         inner join orctiporec on orctiporec.o15_codigo = solicitacaorepasse.recurso ";
-    $sSqlBusca .= "         inner join saltes     on saltes.k13_reduz      = solicitacaorepasse.conta ";
-    $sSqlBusca .= "         inner join conplanoreduz on conplanoreduz.c61_reduz  = saltes.k13_reduz ";
+    $sSqlBusca .= "         left join saltes     on saltes.k13_reduz      = solicitacaorepasse.conta ";
+    $sSqlBusca .= "         left join conplanoreduz on conplanoreduz.c61_reduz  = saltes.k13_reduz ";
     $sSqlBusca .= "                                 and conplanoreduz.c61_anousu = solicitacaorepasse.unidade_anousu ";
-    $sSqlBusca .= "         inner join conplanocontabancaria on conplanocontabancaria.c56_codcon = conplanoreduz.c61_codcon ";
+    $sSqlBusca .= "         left join conplanocontabancaria on conplanocontabancaria.c56_codcon = conplanoreduz.c61_codcon ";
     $sSqlBusca .= "                                         and conplanocontabancaria.c56_anousu = conplanoreduz.c61_anousu ";
-    $sSqlBusca .= "         inner join contabancaria         on contabancaria.db83_sequencial = conplanocontabancaria.c56_contabancaria ";
+    $sSqlBusca .= "         left join contabancaria         on contabancaria.db83_sequencial = conplanocontabancaria.c56_contabancaria ";
 
     if (!empty($sWhere)) {
       $sSqlBusca .= " where {$sWhere} ";
@@ -73,12 +73,12 @@ class cl_solicitacaorepasse extends DAOBasica {
     $sSqlBusca .= "                              and orcdotacao.o58_orgao   = orcunidade.o41_orgao   ";
     $sSqlBusca .= "                              and orcdotacao.o58_unidade = orcunidade.o41_unidade ";
     $sSqlBusca .= "         inner join orctiporec on orctiporec.o15_codigo = solicitacaorepasse.recurso ";
-    $sSqlBusca .= "         inner join saltes     on saltes.k13_reduz      = solicitacaorepasse.conta ";
-    $sSqlBusca .= "         inner join conplanoreduz on conplanoreduz.c61_reduz  = saltes.k13_reduz ";
+    $sSqlBusca .= "          left join saltes     on saltes.k13_reduz      = solicitacaorepasse.conta ";
+    $sSqlBusca .= "          left join conplanoreduz on conplanoreduz.c61_reduz  = saltes.k13_reduz ";
     $sSqlBusca .= "                                 and conplanoreduz.c61_anousu = solicitacaorepasse.unidade_anousu ";
-    $sSqlBusca .= "         inner join conplanocontabancaria on conplanocontabancaria.c56_codcon = conplanoreduz.c61_codcon ";
+    $sSqlBusca .= "          left join conplanocontabancaria on conplanocontabancaria.c56_codcon = conplanoreduz.c61_codcon ";
     $sSqlBusca .= "                                         and conplanocontabancaria.c56_anousu = conplanoreduz.c61_anousu ";
-    $sSqlBusca .= "         inner join contabancaria         on contabancaria.db83_sequencial = conplanocontabancaria.c56_contabancaria ";
+    $sSqlBusca .= "          left join contabancaria         on contabancaria.db83_sequencial = conplanocontabancaria.c56_contabancaria ";
     $sSqlBusca .= "         inner join plugins.autorizacaorepasse on solicitacaorepasse.sequencial = autorizacaorepasse.solicitacaorepasse ";
     $sSqlBusca .= "         inner join slip                       on autorizacaorepasse.slip = k17_codigo ";
     $sSqlBusca .= "         left join empageslip                 on k17_codigo = e89_codigo ";

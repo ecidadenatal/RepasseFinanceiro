@@ -58,9 +58,9 @@ class SolicitacaoRepasseFinanceiro {
   private $nValor;
 
   /**
-   * @var contaTesouraria
+   * @var int
    */
-  private $oConta;
+  private $iConta;
 
   /**
    * @var DBDate
@@ -141,7 +141,7 @@ class SolicitacaoRepasseFinanceiro {
    * @return contaTesouraria
    */
   public function getConta() {
-    return $this->oConta;
+    return $this->iConta;
   }
 
   /**
@@ -194,10 +194,10 @@ class SolicitacaoRepasseFinanceiro {
 
   /**
    *
-   * @param contaTesouraria $oConta
+   * @param $iConta
    */
-  public function setConta(contaTesouraria $oConta) {
-    $this->oConta = $oConta;
+  public function setConta($iConta) {
+    $this->iConta = $iConta;
   }
 
   /**
@@ -314,7 +314,7 @@ class SolicitacaoRepasseFinanceiro {
       $this->oRecurso = new Recurso($oSolicitacao->recurso);
       $this->iAnexo   = $oSolicitacao->anexo;
       $this->nValor   = $oSolicitacao->valor;
-      $this->oConta   = new contaTesouraria($oSolicitacao->conta);
+      $this->iConta      = $oSolicitacao->conta;
       $this->oData    = new DBDate($oSolicitacao->data);
       $this->sMotivo  = $oSolicitacao->motivo;
 
@@ -476,7 +476,7 @@ class SolicitacaoRepasseFinanceiro {
     $oDaoSolicitacao->recurso        = $this->oRecurso->getCodigo();
     $oDaoSolicitacao->anexo          = $this->iAnexo;
     $oDaoSolicitacao->valor          = $this->nValor;
-    $oDaoSolicitacao->conta          = $this->oConta->getCodigoConta();
+    $oDaoSolicitacao->conta          = $this->iConta;
     $oDaoSolicitacao->data           = $this->oData->getDate();
     $oDaoSolicitacao->motivo         = $this->sMotivo;
 

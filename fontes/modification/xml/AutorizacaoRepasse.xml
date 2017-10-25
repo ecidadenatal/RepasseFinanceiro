@@ -187,15 +187,6 @@
           ]]>
       </add>
     </operation>
-
-    <!-- MODIFICACAO NATAL-->
-    <operation>
-      <search regex="true"><![CDATA[(sql_query_contas_vinculadas)]]></search>
-      <add>
-        <![CDATA[$1_natal]]>
-      </add>
-    </operation>
-
   </file>
   
 <!--                                          -->
@@ -250,8 +241,122 @@
         }]]>
       </add>
     </operation>
-  </file>   
+  </file>  
+  
+  <file path='emp4_empageretornoconf001.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\$oTransferencia->executarLancamentoContabil\(\)\s*;)]]></search>
+      <add>
+        <![CDATA[$1
+                 /*
+                  * INICIO PLUGIN RepasseFinanceiro - AutorizacaoRepasse
+                  */
+                 /*
+                  * Caso o slip seja do tipo 1 - Transferência Financeira - Pagamento
+                  * Geramos automaticamente o slip de recebimento
+                  */
+                 if ($iTipoOperacao == 1) {
 
+                    /*
+                     * Buscamos os dados para a geracao do slip de recebimento da transferencia
+                     */
+                    $sSqlDadosTransferencia = "select coalesce((select autorizacaorepasse.solicitacaorepasse
+                                                                  from plugins.autorizacaorepasse
+                                                                 where autorizacaorepasse.slip = transferenciafinanceira.k150_slip), '0') as codigo_solicitacao_repasse,
+                                                      transferenciafinanceira.k150_sequencial  as codigo_transferencia,
+                                                      transferenciafinanceira.k150_instituicao as instituicao_destino,
+                                                      conplanoreduz.c61_reduz as conta_debito,
+                                                      recebimentorepassecontas.conta_credito_destino
+                                                 from transferenciafinanceira          
+                                                      inner join slip                              on slip.k17_codigo                              = transferenciafinanceira.k150_slip
+                                                      inner join empageslip                        on slip.k17_codigo                              = empageslip.e89_codigo
+                                                      inner join empagemovconta                    on empagemovconta.e98_codmov                    = empageslip.e89_codmov
+                                                      inner join pcfornecon                        on pcfornecon.pc63_contabanco                   = empagemovconta.e98_contabanco
+                                                      inner join conplanoconta                     on pcfornecon.pc63_conta                        = conplanoconta.c63_conta
+                                                                                                  and pcfornecon.pc63_agencia                      = conplanoconta.c63_agencia
+                                                                                                  and pcfornecon.pc63_banco                        = conplanoconta.c63_banco
+                                                                                                  and conplanoconta.c63_anousu                     = ".db_getsession('DB_anousu')."
+                                                      inner join plugins.recebimentorepassecontas  on recebimentorepassecontas.instituicao_origem  = slip.k17_instit
+                                                                                                  and recebimentorepassecontas.instituicao_destino = transferenciafinanceira.k150_instituicao
+                                                      inner join conplanoreduz                     on conplanoconta.c63_codcon                     = conplanoreduz.c61_codcon
+                                                                                                  and conplanoconta.c63_anousu                     = conplanoreduz.c61_anousu
+                                                                                                  and conplanoreduz.c61_instit                     = recebimentorepassecontas.instituicao_destino
+                                                     
+                                                where slip.k17_codigo = {$oTipoMov->e89_codigo}";                    
+ 
+                    $rsDadosTransferencia = db_query($sSqlDadosTransferencia);
+                    if (pg_num_rows($rsDadosTransferencia) == 0) {
+                      throw new Exception("Não foram encontrados registros para realização do recebimento do repasse.\nVerifique a configuração das contas de recebimento de repasse.");
+                    }
+                    
+                    $oDadosSlipRecebimento = db_utils::fieldsMemory($rsDadosTransferencia,0);
+                    
+                    if ($oDadosSlipRecebimento->conta_debito == "" || $oDadosSlipRecebimento->conta_credito_destino == "") {
+                      throw new Exception("Conta Débito ou Crédito não Configurada.\nVerifique a configuração das contas de recebimento de repasse.");
+                    }
+                    
+                    if ($oDadosSlipRecebimento->conta_debito == $oDadosSlipRecebimento->conta_credito_destino) {
+                      throw new Exception("Conta Débito e Crédito não podem ser iguais.");
+                    }
+                    
+                    $sObservacaoRecebimento  = "Gerado automaticamente para recebimento da autorização de repasse ";
+                    $sObservacaoRecebimento .= "referente a solicitação {$oDadosSlipRecebimento->codigo_solicitacao_repasse}";
+                    
+                    //alteramos a instituição da sessão temporariamente para a instituição do recebimento
+                    db_putsession("DB_instit", $oDadosSlipRecebimento->instituicao_destino);
+                    
+                    /*
+                     * Setamos os campos da tranferência financeira do recebimento
+                     */
+                    $oTransferencia = new TransferenciaFinanceira($oTipoMov->e89_codigo);
+                    $oTransferencia->setTipoPagamento(0);
+                    $oTransferencia->setContaDebito($oDadosSlipRecebimento->conta_debito);
+                    $oTransferencia->setContaCredito($oDadosSlipRecebimento->conta_credito_destino);
+                    $oTransferencia->setCaracteristicaPeculiarDebito("000");
+                    $oTransferencia->setCaracteristicaPeculiarCredito("000");
+                    $oTransferencia->setHistorico(9042);
+                    $oTransferencia->setObservacao($sObservacaoRecebimento);
+                    $oTransferencia->setData($data);
+                    $oTransferencia->setInstituicaoDestino($oDadosSlipRecebimento->instituicao_destino);
+                     
+                    /**
+                     * Verifica qual transferência financeira o slip é originário
+                     * Usa essa informação para que a transferência seja marcada como recebida, na tabela transferenciafinanceirarecebimento
+                     */
+                    $oDaoTransferenciaFinanceira = db_utils::getDao('transferenciafinanceira');
+                    $sSqlTransferenciaFinanceira = $oDaoTransferenciaFinanceira->sql_query_file(null, "*", null, "k150_slip = {$oTipoMov->e89_codigo}");
+                    $rsTransferenciaFinanceira   = $oDaoTransferenciaFinanceira->sql_record($sSqlTransferenciaFinanceira);
+                    
+                    if ($oDaoTransferenciaFinanceira->erro_status == "0") {
+                        throw new Exception("Não foi possível receber a transação.\n\nErro Técnico 1: {$oDaoTransferenciaFinanceira->erro_msg}");
+                    }
+                    
+                    /**
+                     * Efetuamos o recebimento da transferência
+                     */
+                    $oTransferencia->receberTransferencia($oDadosSlipRecebimento->codigo_transferencia);
+                    
+                    //retornamos o valor da instituição da sessão
+                    db_putsession("DB_instit", $iInstit);
+                 }
+                 /*
+                  * FIM PLUGIN RepasseFinanceiro - AutorizacaoRepasse
+                  */
+]]>
+      </add>
+    </operation>
+    <operation>
+      <search regex="true"><![CDATA[(}\s*catch\s*\(\s*Exception\s*\$eErro\s*\)\s*\{)]]></search>
+      <add>
+        <![CDATA[$1
+
+                 //retornamos o valor da instituição da sessão
+                 db_putsession("DB_instit", $iInstit);
+        ]]>
+      </add>
+    </operation>    
+  </file>     
+  
   <file path='classes/db_empagetipo_classe.php'>
     <operation>
       <search regex="true"><![CDATA[(function sql_query_contas_vinculadas\s*\(.*\{)]]></search>
@@ -309,6 +414,79 @@
   $1]]>
       </add>
     </operation>
-  </file>
+  </file>     
+  
+  <file path='model/agendaPagamento.model.php'>
+    <operation>
+      <search regex="true"><![CDATA[(sql_query_contas_vinculadas)]]></search>
+      <add>
+        <![CDATA[$1_natal]]>
+      </add>
+    </operation>
+  </file>  
+
+  <file path='scripts/classes/DBViewSlipPagamento.classe.js'>
+    <operation>
+      <search regex="true"><![CDATA[(me\.oTxtInstituicaoDestino.*setValue\(''\).*\n*\s*.*\})]]></search>
+      <add>
+        <![CDATA[$1
+
+    var iInstituicaoDestino = me.oTxtInstituicaoDestinoCodigo;
+    var sRPC        = 'cai4_solicitacaorepasse.RPC.php';
+
+    js_divCarregando("Aguarde, carregando informações...", "msgBox");
+    var oParam  = new Object();
+    oParam.exec =    'getContaRecebimento';
+    oParam.iInstitDestino = me.oTxtInstituicaoDestinoCodigo.getValue();
+
+    new Ajax.Request ( me.sUrlRpc,
+                {
+                method: 'post',
+                parameters: 'json='+Object.toJSON(oParam),
+                async: false,
+                onComplete: function(oAjax){
+
+                  js_removeObj("msgBox");
+                  var oRetorno = eval("("+oAjax.responseText+")");
+
+                  if (oRetorno.lErro) {
+                    alert(oRetorno.message.urlDecode());
+                    return false;
+                  }
+
+                  if (oRetorno.contaDebito != 0) {
+                    me.oTxtContaDebitoCodigo.setValue(oRetorno.contaDebito);   
+                    me.pesquisaContaEventoContabil(false, false);
+                  }
+                }
+              });]]>
+      </add>
+    </operation>
+  </file>  
+
+  <file path='cai4_transferencia.RPC.php'>
+    <operation>
+      <search regex="true"><![CDATA[(case.*excluirSlip.*:)]]></search>
+      <add>
+        <![CDATA[  case 'getContaRecebimento':
+
+    $iInstitCredito = db_getsession('DB_instit');
+    $iInstitDebito  = $oParam->iInstitDestino;
+
+    $oDaoRecebimentoRepasseContas = db_utils::getDao("recebimentorepassecontas");
+    $rsRecebimentoRepasseContas   = $oDaoRecebimentoRepasseContas->sql_record($oDaoRecebimentoRepasseContas->sql_query(null, null, "conta_debito_origem", null, "instituicao_origem = {$iInstitCredito} and instituicao_destino = {$iInstitDebito}"));
+    if ($oDaoRecebimentoRepasseContas->numrows == 0){
+      throw new Exception("Erro ao buscar conta de destino");
+    }
+    $sContaDebito = !empty(db_utils::fieldsMemory($rsRecebimentoRepasseContas, 0)->conta_debito_origem) ? db_utils::fieldsMemory($rsRecebimentoRepasseContas, 0)->conta_debito_origem : 0;
+
+    $oRetorno->contaDebito = $sContaDebito;
+
+    break;
+
+    $1]]>
+      </add>
+    </operation>
+  </file>  
 
 </modification>

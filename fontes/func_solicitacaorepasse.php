@@ -1,11 +1,11 @@
 <?php
 
-require_once ("libs/db_stdlib.php");
-require_once ("libs/db_conecta_plugin.php");
-require_once ("libs/db_sessoes.php");
-require_once ("libs/db_utils.php");
-require_once ("libs/db_app.utils.php");
-require_once ("dbforms/db_funcoes.php");
+require_once(modification("libs/db_stdlib.php"));
+require_once(modification("libs/db_conecta_plugin.php"));
+require_once(modification("libs/db_sessoes.php"));
+require_once(modification("libs/db_utils.php"));
+require_once(modification("libs/db_app.utils.php"));
+require_once(modification("dbforms/db_funcoes.php"));
 db_postmemory($_GET);
 
 define('INCLUSAO', 1);
@@ -369,4 +369,11 @@ $oDaoSolicitacaoRepasse = new cl_solicitacaorepasse();
     oCodigoUnidade.value    = '';
     oDescricaoUnidade.value = '';
   }
+</script>
+
+<script type="text/javascript">
+(function() {
+  var query = frameElement.getAttribute('name').replace('IF', ''), input = document.querySelector('input[value="Fechar"]');
+  input.onclick = parent[query] ? parent[query].hide.bind(parent[query]) : input.onclick;
+})();
 </script>
