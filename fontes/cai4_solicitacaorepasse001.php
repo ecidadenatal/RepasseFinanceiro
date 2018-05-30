@@ -422,7 +422,7 @@ $iOpcao = !empty($oGet->acao) ? $oGet->acao : 1;
       iContaDestino:     $F('conta_destino_numero'),
       sData:             $F('data_repasse'),
       nValor:            $F('valor_repasse').getNumber(),
-      sMotivo:           encodeURIComponent(tagString($F('motivo'))),
+      sMotivo:           $F('motivo'),
       aNotas:            aNotas
     };
 

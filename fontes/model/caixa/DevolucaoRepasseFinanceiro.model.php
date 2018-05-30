@@ -324,7 +324,7 @@ class DevolucaoRepasseFinanceiro {
     $oTransferencia->setCaracteristicaPeculiarCredito('000');
     $oTransferencia->setCaracteristicaPeculiarDebito('000');
     $oTransferencia->setData($oData->getDate());
-    $oTransferencia->setContaCredito($this->oSolicitacaoRepasse->getConta()->getCodigoReduzido());
+    $oTransferencia->setContaCredito($this->oSolicitacaoRepasse->getConta());
     $oTransferencia->setContaDebito($this->oAutorizacaoRepasse->getContaPagadora()->getCodigoReduzido());
     $oTransferencia->setHistorico($iCodigoHistorico);
     $oTransferencia->setValor($this->nValorDevolucao);

@@ -64,7 +64,7 @@ try {
       $oSolicitacaoRepasse->setConta($oParam->iContaDestino);
       $oSolicitacaoRepasse->setAnexo($oParam->iAnexo);
       $oSolicitacaoRepasse->setValor($oParam->nValor);
-      $oSolicitacaoRepasse->setMotivo(addslashes(db_stdClass::normalizeStringJson($oParam->sMotivo)));
+      $oSolicitacaoRepasse->setMotivo(addslashes(db_stdClass::normalizeStringJson(urldecode($oParam->sMotivo))));
       $oSolicitacaoRepasse->setData($oData);
 
       $oSolicitacaoRepasse->removerNotasLiquidacao();
@@ -113,8 +113,8 @@ try {
       $oDados->sRecurso = urlencode($oSolicitacaoRepasse->getRecurso()->getDescricao());
       $oDados->iAnexo = $oSolicitacaoRepasse->getAnexo();
       $oDados->sAnexo = urlencode($oSolicitacaoRepasse->getAnexoDescricao());
-      $oDados->iContaDestino = $oSolicitacaoRepasse->getConta()->getCodigoConta();
-      $oDados->sContaDestino = urlencode($oSolicitacaoRepasse->getConta()->getDescricao());
+      $oDados->iContaDestino = $oSolicitacaoRepasse->getConta();
+      $oDados->sContaDestino = "";//urlencode($oSolicitacaoRepasse->getConta()->getDescricao());
       $oDados->sData = $oSolicitacaoRepasse->getData()->getDate(DBDate::DATA_PTBR);
       $oDados->nValor = $oSolicitacaoRepasse->getValor();
       $oDados->sMotivo = urlencode($oSolicitacaoRepasse->getMotivo());
@@ -216,7 +216,7 @@ try {
 
       $iInstituicao = db_getsession('DB_instit');
       $iDataUsu     = db_getsession('DB_datausu');
-      $iConta       = $oSolicitacaoRepasse->getConta()->getCodigoReduzido();
+      $iConta       = $oSolicitacaoRepasse->getConta();
       $oData        = new DBDate(date('Y-m-d', $iDataUsu));
 
       $oSaldo                = contaTesouraria::getSaldoTesouraria($iConta, $oData, $oData, $iInstituicao);

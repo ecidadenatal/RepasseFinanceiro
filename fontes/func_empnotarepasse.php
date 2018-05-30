@@ -25,11 +25,11 @@
  *                                licenca/licenca_pt.txt
  */
 
-require(modification("libs/db_stdlib.php"));
-require(modification("libs/db_conecta_plugin.php"));
-include(modification("libs/db_sessoes.php"));
-include(modification("dbforms/db_funcoes.php"));
-include(modification("classes/db_empnota_classe.php"));
+require_once(modification("libs/db_stdlib.php"));
+require_once(modification("libs/db_conecta_plugin.php"));
+require_once(modification("libs/db_sessoes.php"));
+require_once(modification("dbforms/db_funcoes.php"));
+require_once(modification("classes/db_empnota_classe.php"));
 db_postmemory($_POST);
 db_postmemory($_GET);
 parse_str($HTTP_SERVER_VARS["QUERY_STRING"]);
@@ -123,10 +123,12 @@ $iAnoSessao = db_getsession('DB_anousu');
       }
 
       //Somente liquidações aprovadas no controle interno.
-      $sWhereControleInterno  = " (exists(select 1 from plugins.empenhonotacontroleinterno ";
-      $sWhereControleInterno .= "               where nota = e71_codnota ";
-      $sWhereControleInterno .= "               and situacao in (" . ControleInterno::SITUACAO_APROVADA . ", " . ControleInterno::SITUACAO_LIBERADO_AUTOMATICO . "))";
-      $sWhereControleInterno .= " )";
+      $sWhereControleInterno = " (exists (select 1 
+		                                    from plugins.controleinternoempenho 
+		                                         inner join plugins.controleinternoempenhoempempenho on controleinternoempenhoempempenho.controleinternoempenho = controleinternoempenho.sequencial
+		                                   where controleinternoempenhoempempenho.empempenho = empempenho.e60_numemp
+		                                     and situacao_aprovacao in (5))
+		                         ) ";
       $aWhere[]               = $sWhereControleInterno;
 
       //Aplica filtros por unidade, anexo e recurso.
@@ -138,8 +140,8 @@ $iAnoSessao = db_getsession('DB_anousu');
       }
 
       $aWhere[]  = "e69_codnota not in (select empnota from plugins.solicitacaorepasseempnota where estornado = false)";
-      $aWhere[]  = "(e70_valor - e70_vlranu) = e70_vlrliq";
-      $aWhere[]  = "(e70_valor - e70_vlranu) > 0";
+      $aWhere[]  = "round((e70_valor - e70_vlranu),2) = round(e70_vlrliq,2)";
+      $aWhere[]  = "round((e70_valor - e70_vlranu),2) > 0";
       $aWhere[]  = "pagordemele.e53_valor <> pagordemele.e53_vlrpag";
 
       //Busca para quando a func é chamada e exida.

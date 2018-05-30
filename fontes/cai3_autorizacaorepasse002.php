@@ -1,10 +1,10 @@
 <?php
-require_once(modification("fpdf151/PDFDocument.php"));
-require_once(modification("fpdf151/PDFTable.php"));
-require_once(modification("dbforms/db_funcoes.php"));
-require_once(modification("libs/db_stdlib.php"));
-require_once(modification("libs/db_conecta_plugin.php"));
-require_once(modification("libs/db_utils.php"));
+require_once ("fpdf151/PDFDocument.php");
+require_once ("fpdf151/PDFTable.php");
+require_once ("dbforms/db_funcoes.php");
+require_once ("libs/db_stdlib.php");
+require_once ("libs/db_conecta_plugin.php");
+require_once ("libs/db_utils.php");
 
 $oGet = db_utils::postMemory($_GET);
 

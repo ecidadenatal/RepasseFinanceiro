@@ -187,6 +187,12 @@
           ]]>
       </add>
     </operation>
+    <operation>
+      <search regex="true"><![CDATA[(sql_query_contas_vinculadas)]]></search>
+      <add>
+        <![CDATA[$1_natal]]>
+      </add>
+    </operation>
   </file>
   
 <!--                                          -->
@@ -245,7 +251,7 @@
   
   <file path='emp4_empageretornoconf001.php'>
     <operation>
-      <search regex="true"><![CDATA[(\$oTransferencia->executarLancamentoContabil\(\)\s*;)]]></search>
+      <search regex="true"><![CDATA[(\$oTransferencia->executarLancamentoContabil\(.*\)\s*;)]]></search>
       <add>
         <![CDATA[$1
                  /*
@@ -416,15 +422,6 @@
     </operation>
   </file>     
   
-  <file path='model/agendaPagamento.model.php'>
-    <operation>
-      <search regex="true"><![CDATA[(sql_query_contas_vinculadas)]]></search>
-      <add>
-        <![CDATA[$1_natal]]>
-      </add>
-    </operation>
-  </file>  
-
   <file path='scripts/classes/DBViewSlipPagamento.classe.js'>
     <operation>
       <search regex="true"><![CDATA[(me\.oTxtInstituicaoDestino.*setValue\(''\).*\n*\s*.*\})]]></search>

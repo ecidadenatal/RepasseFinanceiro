@@ -143,6 +143,31 @@ class SolicitacaoRepasseFinanceiro {
   public function getConta() {
     return $this->iConta;
   }
+  
+  public function getDescricaoConta() {
+  	 
+  	$sDescricao = "";
+  	$iReduz = $this->getConta();
+  	 
+  	$iAno = $this->getData()->getAno();
+  	if (empty($iAno)) {
+  		$iAno = db_getsession("DB_anousu");
+  	}
+  	 
+  	$sSqlDescricaoConta = "select c60_descr
+  	                         from conplano
+  	                              inner join conplanoreduz on conplano.c60_codcon = conplanoreduz.c61_codcon
+  	                                                      and conplano.c60_anousu = conplanoreduz.c61_anousu
+  	                        where conplanoreduz.c61_anousu = {$iAno}
+  	                          and conplanoreduz.c61_reduz = {$iReduz}";
+  	$rsDescricaoConta = db_query($sSqlDescricaoConta);
+  	if (pg_num_rows($rsDescricaoConta) > 0) {
+  		$sDescricao = db_utils::fieldsMemory($rsDescricaoConta, 0)->c60_descr;
+  	}
+  	 
+  	return $sDescricao;
+  	 
+  }  
 
   /**
    *
